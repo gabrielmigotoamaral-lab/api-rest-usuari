@@ -1,17 +1,39 @@
 # usuarios-api
 
-API REST simples para cadastro de usuários (CRUD), feita com Spring Boot e banco H2 em memória.
+API REST simples para cadastro de usuários (CRUD), feita com Spring Boot e banco MySQL.
 
 ## Tecnologias
 
 - Java 21
 - Spring Boot 4.1 (Web MVC, Data JPA, Validation)
-- H2 Database (em memória)
+- MySQL 8
+- H2 Database (apenas nos testes)
 - Maven (via wrapper `mvnw`)
 
 ## Como rodar
 
-Pré-requisito: JDK 21 instalado.
+Pré-requisitos:
+
+- JDK 21 instalado
+- MySQL rodando em `localhost:3306`
+
+O banco `usuariosdb` é criado automaticamente na primeira execução. Por padrão a aplicação conecta com usuário `root` e senha `root`; para usar outras credenciais, defina as variáveis de ambiente `DB_USERNAME` e `DB_PASSWORD`:
+
+```bash
+# Git Bash
+DB_USERNAME=meu_usuario DB_PASSWORD=minha_senha ./mvnw spring-boot:run
+
+# PowerShell
+$env:DB_USERNAME="meu_usuario"; $env:DB_PASSWORD="minha_senha"; .\mvnw.cmd spring-boot:run
+```
+
+Para subir um MySQL rapidamente com Docker:
+
+```bash
+docker run -d --name mysql-usuarios -p 3306:3306 -e MYSQL_ROOT_PASSWORD=root mysql:8
+```
+
+Rodando com as credenciais padrão:
 
 ```bash
 # Linux / macOS / Git Bash
@@ -70,17 +92,13 @@ curl -X PUT http://localhost:8080/usuarios/1 \
 curl -X DELETE http://localhost:8080/usuarios/1
 ```
 
-## Console do H2
+## Banco de dados
 
-Com a aplicação rodando, acesse `http://localhost:8080/h2-console` e use:
-
-- **JDBC URL:** `jdbc:h2:mem:usuariosdb`
-- **Usuário:** `sa`
-- **Senha:** *(em branco)*
-
-> O banco é em memória (`create-drop`): os dados são apagados sempre que a aplicação é reiniciada.
+As tabelas são criadas/atualizadas automaticamente pelo Hibernate (`ddl-auto=update`), e os dados persistem entre reinicializações da aplicação.
 
 ## Testes
+
+Os testes usam H2 em memória (configurado em `src/test/resources/application.properties`), então não precisam de MySQL rodando.
 
 ```bash
 ./mvnw test
