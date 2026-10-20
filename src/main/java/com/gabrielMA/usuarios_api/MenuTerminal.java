@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Scanner;
 import java.util.Set;
 
-// Menu no terminal que abre junto com a API (desligado nos testes via app.menu-terminal=false)
+// Menu pra cadastrar pelo terminal, abre junto com a API
 @Component
 @ConditionalOnProperty(name = "app.menu-terminal", havingValue = "true", matchIfMissing = true)
 public class MenuTerminal implements CommandLineRunner {
@@ -21,7 +21,7 @@ public class MenuTerminal implements CommandLineRunner {
     private final UsuarioRepository repository;
     private final Validator validator;
     private final ConfigurableApplicationContext context;
-    // Lê o teclado na mesma codificação do console, para nomes com acento (ex: João) não saírem quebrados
+    // sem isso nomes com acento (tipo João) ficavam quebrados
     private final Scanner scanner = new Scanner(System.in,
             Charset.forName(System.getProperty("stdout.encoding", Charset.defaultCharset().name())));
 
@@ -67,7 +67,7 @@ public class MenuTerminal implements CommandLineRunner {
         System.out.print("Email: ");
         usuario.setEmail(scanner.nextLine().trim());
 
-        // Usa as mesmas regras da entidade (@NotBlank, @Email)
+        // valida com as mesmas regras do Usuario
         Set<ConstraintViolation<Usuario>> erros = validator.validate(usuario);
         if (!erros.isEmpty()) {
             erros.forEach(erro -> System.out.println("Erro: " + erro.getMessage()));

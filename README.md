@@ -1,104 +1,84 @@
 # usuarios-api
 
-API REST simples para cadastro de usuários (CRUD), feita com Spring Boot e banco MySQL.
+Projeto que fiz pra estudar Spring Boot: uma API de cadastro de usuários (o famoso CRUD) com MySQL.
 
-## Tecnologias
+Comecei usando o H2, mas os dados sumiam toda vez que eu reiniciava a aplicação, então migrei pro MySQL rodando no Docker. Também coloquei um menu no terminal pra cadastrar sem precisar ficar mandando requisição na mão.
+
+## O que usei
 
 - Java 21
-- Spring Boot 4.1 (Web MVC, Data JPA, Validation)
-- MySQL 8
-- H2 Database (apenas nos testes)
-- Maven (via wrapper `mvnw`)
+- Spring Boot 4.1 (Web, Data JPA e Validation)
+- MySQL 8 no Docker
+- H2 só pros testes
+- Maven
 
 ## Como rodar
 
-Pré-requisitos:
+Você vai precisar do JDK 21 e do Docker.
 
-- JDK 21 instalado
-- MySQL rodando em `localhost:3306`
+**1. Subir o MySQL**
 
-O banco `usuariosdb` é criado automaticamente na primeira execução. Por padrão a aplicação conecta com usuário `root` e senha `root`; para usar outras credenciais, defina as variáveis de ambiente `DB_USERNAME` e `DB_PASSWORD`:
+Na primeira vez, cria o container:
 
 ```bash
-# Git Bash
-DB_USERNAME=meu_usuario DB_PASSWORD=minha_senha ./mvnw spring-boot:run
-
-# PowerShell
-$env:DB_USERNAME="meu_usuario"; $env:DB_PASSWORD="minha_senha"; .\mvnw.cmd spring-boot:run
+docker run -d --name mysql-usuarios -e MYSQL_ROOT_PASSWORD=root -e MYSQL_DATABASE=usuariosdb -p 3306:3306 mysql:8.4
 ```
 
-Para subir um MySQL rapidamente com Docker:
+Das próximas vezes é só ligar:
 
 ```bash
-docker run -d --name mysql-usuarios -p 3306:3306 -e MYSQL_ROOT_PASSWORD=root mysql:8
+docker start mysql-usuarios
 ```
 
-Rodando com as credenciais padrão:
+**2. Rodar a aplicação**
+
+Pela IDE (dando play na `UsuariosApiApplication`) ou pelo terminal:
 
 ```bash
-# Linux / macOS / Git Bash
 ./mvnw spring-boot:run
-
-# Windows (PowerShell / CMD)
-mvnw.cmd spring-boot:run
 ```
 
-A aplicação sobe em `http://localhost:8080`.
+Ela sobe em `http://localhost:8080`. Por padrão conecta com usuário `root` e senha `root`. Se o seu MySQL for diferente, dá pra trocar pelas variáveis `DB_USERNAME` e `DB_PASSWORD`.
+
+## Menu no terminal
+
+Quando a aplicação sobe, aparece esse menu no console:
+
+```
+===== CADASTRO DE USUÁRIOS =====
+1 - Cadastrar usuário
+2 - Listar usuários
+3 - Excluir usuário
+0 - Sair
+```
+
+É só digitar o número e dar Enter.
 
 ## Endpoints
 
-| Método | Rota             | Descrição                  | Respostas          |
-|--------|------------------|----------------------------|--------------------|
-| GET    | `/usuarios`      | Lista todos os usuários    | 200                |
-| GET    | `/usuarios/{id}` | Busca um usuário pelo ID   | 200, 404           |
-| POST   | `/usuarios`      | Cria um novo usuário       | 200, 400           |
-| PUT    | `/usuarios/{id}` | Atualiza um usuário        | 200, 400, 404      |
-| DELETE | `/usuarios/{id}` | Remove um usuário          | 204, 404           |
+Se preferir usar a API direto (pelo Postman, Insomnia, curl...):
 
-### Modelo
+| Método | Rota             | O que faz              |
+|--------|------------------|------------------------|
+| GET    | `/usuarios`      | Lista todo mundo       |
+| GET    | `/usuarios/{id}` | Busca um usuário       |
+| POST   | `/usuarios`      | Cadastra               |
+| PUT    | `/usuarios/{id}` | Atualiza               |
+| DELETE | `/usuarios/{id}` | Apaga                  |
 
-```json
-{
-  "id": 1,
-  "nome": "Gabriel",
-  "email": "gabriel@exemplo.com"
-}
-```
-
-Validações:
-- `nome` — obrigatório
-- `email` — obrigatório, formato de e-mail válido e único
-
-### Exemplos com curl
+Exemplo de cadastro:
 
 ```bash
-# Criar
 curl -X POST http://localhost:8080/usuarios \
   -H "Content-Type: application/json" \
   -d '{"nome": "Gabriel", "email": "gabriel@exemplo.com"}'
-
-# Listar
-curl http://localhost:8080/usuarios
-
-# Buscar por ID
-curl http://localhost:8080/usuarios/1
-
-# Atualizar
-curl -X PUT http://localhost:8080/usuarios/1 \
-  -H "Content-Type: application/json" \
-  -d '{"nome": "Gabriel M. A.", "email": "gabriel@exemplo.com"}'
-
-# Deletar
-curl -X DELETE http://localhost:8080/usuarios/1
 ```
 
-## Banco de dados
-
-As tabelas são criadas/atualizadas automaticamente pelo Hibernate (`ddl-auto=update`), e os dados persistem entre reinicializações da aplicação.
+O nome é obrigatório e o email precisa ser válido e não pode estar repetido.
 
 ## Testes
 
-Os testes usam H2 em memória (configurado em `src/test/resources/application.properties`), então não precisam de MySQL rodando.
+Os testes rodam com H2 em memória, então não precisa do MySQL ligado:
 
 ```bash
 ./mvnw test
